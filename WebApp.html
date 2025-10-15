@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Parameter Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Apply the Inter font globally */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #eef2ff; /* Lightest indigo background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        /* Tech-focused colors */
+        .color-primary { background-color: #4338CA; } /* Indigo 700 */
+        .text-primary { color: #4338CA; }
+    </style>
+</head>
+<body>
+    <div class="w-full max-w-xl p-4 sm:p-8">
+        <!-- Main Content Card -->
+        <div class="bg-white shadow-2xl rounded-xl overflow-hidden border-t-8 border-color-primary">
+            
+            <!-- Header Section -->
+            <div class="color-primary text-white p-6 sm:p-8 text-center rounded-t-lg">
+                <h1 class="text-3xl sm:text-4xl font-extrabold mb-1">
+                    AI Parameter Calculator
+                </h1>
+                <p class="text-md font-light">Dense Layer Analysis</p>
+            </div>
+
+            <!-- Explanation Section -->
+            <div class="p-6 sm:p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                    How many parameters?
+                </h2>
+
+                <p class="text-gray-600 mb-6">
+                    A parameter is a value (like a weight or bias) that the AI model learns during training. For a simple **Dense Layer**, the number of parameters is calculated using this formula:
+                </p>
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6 text-center text-lg font-semibold text-primary">
+                    Parameters = (Input Neurons &times; Output Neurons) + Output Neurons (Bias)
+                </div>
+                
+                <!-- Input Fields -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="inputSize" class="block text-sm font-medium text-gray-700">Input Neurons (e.g., 784 for an image)</label>
+                        <input type="number" id="inputSize" value="1024" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-2 border" placeholder="e.g., 1024">
+                    </div>
+                    <div>
+                        <label for="outputSize" class="block text-sm font-medium text-gray-700">Output Neurons (e.g., 10 for classification)</label>
+                        <input type="number" id="outputSize" value="512" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary p-2 border" placeholder="e.g., 512">
+                    </div>
+                </div>
+
+                <!-- Calculation Button -->
+                <button onclick="calculateParameters()" 
+                        class="mt-6 w-full color-primary text-white py-3 rounded-lg font-bold text-lg hover:bg-indigo-800 transition duration-300 shadow-lg hover:shadow-xl">
+                    Calculate Parameters
+                </button>
+
+                <!-- Result Display -->
+                <div id="result-container" class="mt-8 pt-4 border-t-2 border-indigo-200 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Calculation Results:</h3>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between bg-indigo-50 p-4 rounded-lg border border-indigo-300">
+                        <div class="mb-2 sm:mb-0">
+                            <p class="text-sm text-gray-600">Total Weights ($ \text{Input} \times \text{Output} $)</p>
+                            <p id="weights-result" class="text-xl font-bold text-gray-900"></p>
+                        </div>
+                        <div class="mb-2 sm:mb-0">
+                            <p class="text-sm text-gray-600">Bias Parameters ($ \text{Output} $)</p>
+                            <p id="bias-result" class="text-xl font-bold text-gray-900"></p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Total Parameters</p>
+                            <p id="total-result" class="text-2xl font-extrabold text-primary"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // Function to format numbers with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Main calculation function
+        function calculateParameters() {
+            const inputField = document.getElementById('inputSize');
+            const outputField = document.getElementById('outputSize');
+            
+            const I = parseInt(inputField.value);
+            const O = parseInt(outputField.value);
+            
+            const resultContainer = document.getElementById('result-container');
+            const weightsResult = document.getElementById('weights-result');
+            const biasResult = document.getElementById('bias-result');
+            const totalResult = document.getElementById('total-result');
+
+            // Basic Input Validation
+            if (isNaN(I) || I <= 0 || isNaN(O) || O <= 0) {
+                resultContainer.classList.remove('hidden');
+                totalResult.textContent = "Error: Please enter valid numbers (> 0).";
+                weightsResult.textContent = 'N/A';
+                biasResult.textContent = 'N/A';
+                return;
+            }
+
+            // 1. Calculate Weights: I * O
+            const weights = I * O;
+
+            // 2. Calculate Bias: O (one bias for each output neuron)
+            const bias = O;
+
+            // 3. Calculate Total Parameters
+            const totalParameters = weights + bias;
+
+            // Update the UI
+            weightsResult.textContent = formatNumber(weights);
+            biasResult.textContent = formatNumber(bias);
+            totalResult.textContent = formatNumber(totalParameters);
+
+            resultContainer.classList.remove('hidden');
+        }
+
+        // Run calculation on load with default values
+        window.onload = calculateParameters;
+    </script>
+</body>
+</html>
