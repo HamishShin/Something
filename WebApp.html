@@ -138,5 +138,126 @@
         // Run calculation on load with default values
         window.onload = calculateParameters;
     </script>
+    <script>
+    const canvas = document.getElementById('golfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let holeNumber = 1;
+    let strokes = 0;
+    let totalStrokes = 0;
+    const maxHoles = 18;
+
+    let ball = {};
+    let hole = {};
+    let isDragging = false;
+    let dragStart = null;
+
+    function randomPosition(radius) {
+        return {
+            x: Math.random() * (canvas.width - 2 * radius) + radius,
+            y: Math.random() * (canvas.height - 2 * radius) + radius
+        };
+    }
+
+    function setupHole() {
+        ball = { ...randomPosition(10), radius: 10, vx: 0, vy: 0 };
+        hole = { ...randomPosition(15), radius: 15 };
+        strokes = 0;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Hole
+        ctx.beginPath();
+        ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#4338CA';
+        ctx.fill();
+
+        // Ball
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#4F46E5';
+        ctx.fill();
+
+        // Drag line
+        if (isDragging && dragStart) {
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(dragStart.x, dragStart.y);
+            ctx.strokeStyle = '#6366F1';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // Scoreboard
+        ctx.font = 'bold 16px Inter';
+        ctx.fillStyle = '#1F2937';
+        ctx.fillText(`Hole: ${holeNumber} / ${maxHoles}`, 10, 20);
+        ctx.fillText(`Strokes: ${strokes}`, 10, 40);
+        ctx.fillText(`Total: ${totalStrokes}`, 10, 60);
+    }
+
+    function update() {
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        ball.vx *= 0.98;
+        ball.vy *= 0.98;
+
+        if (Math.abs(ball.vx) < 0.1) ball.vx = 0;
+        if (Math.abs(ball.vy) < 0.1) ball.vy = 0;
+
+        if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) ball.vx *= -0.8;
+        if (ball.y - ball.radius < 0 || ball.y + ball.radius > canvas.height) ball.vy *= -0.8;
+
+        const dx = ball.x - hole.x;
+        const dy = ball.y - hole.y;
+        if (Math.sqrt(dx * dx + dy * dy) < hole.radius) {
+            totalStrokes += strokes;
+            if (holeNumber < maxHoles) {
+                holeNumber++;
+                setupHole();
+            } else {
+                ctx.font = 'bold 24px Inter';
+                ctx.fillStyle = '#10B981';
+                ctx.fillText(`🏆 Game Over! Total Strokes: ${totalStrokes}`, 40, canvas.height / 2);
+                return;
+            }
+        }
+
+        draw();
+        requestAnimationFrame(update);
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        const dx = mx - ball.x;
+        const dy = my - ball.y;
+        if (Math.sqrt(dx * dx + dy * dy) < ball.radius + 5) {
+            isDragging = true;
+            dragStart = { x: mx, y: my };
+        }
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        if (isDragging && dragStart) {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            ball.vx = (ball.x - mx) * 0.1;
+            ball.vy = (ball.y - my) * 0.1;
+            strokes++;
+        }
+        isDragging = false;
+        dragStart = null;
+    });
+
+    setupHole();
+    draw();
+    update();
+</script>
 </body>
 </html>
